@@ -1,0 +1,36 @@
+diff --git a/node_modules/react-native-sqlite-storage/platforms/android/build.gradle b/node_modules/react-native-sqlite-storage/platforms/android/build.gradle
+index 1234567..abcdefg 100644
+--- a/node_modules/react-native-sqlite-storage/platforms/android/build.gradle
++++ b/node_modules/react-native-sqlite-storage/platforms/android/build.gradle
+@@ -1,10 +1,7 @@
+ buildscript {
+     repositories {
+         google()
+-        jcenter()
+-    }
+-
+-    dependencies {
+-        classpath 'com.android.tools.build:gradle:3.1.4'
++        mavenCentral()
+     }
+ }
+
+@@ -25,15 +22,12 @@
+         versionCode 1
+         versionName "1.0"
+     }
+-    lintOptions {
++    lint {
+         abortOnError false
+     }
+ }
+
+ repositories {
+     mavenCentral()
+     google()
+-    maven {
+-        url "https://maven.google.com"
+-    }
+ }
+
+ dependencies {

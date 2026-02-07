@@ -19,3 +19,19 @@ buildscript {
 }
 
 apply plugin: "com.facebook.react.rootproject"
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    // Replace jcenter() with mavenCentral() in all subprojects
+    // (jcenter was removed in Gradle 9)
+    buildscript {
+        repositories {
+            google()
+            mavenCentral()
+        }
+    }
+}
