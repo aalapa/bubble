@@ -12,6 +12,8 @@ import {RootStackParamList} from '../navigation/types';
 import {User} from '../types';
 import database from '../database';
 import AddUserModal from '../components/AddUserModal';
+import SyncStatusBadge from '../components/SyncStatusBadge';
+import {useSyncContext} from '../services/SyncProvider';
 
 type ProfileSelectionNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -20,6 +22,7 @@ type ProfileSelectionNavigationProp = NativeStackNavigationProp<
 
 const ProfileSelectionScreen = () => {
   const navigation = useNavigation<ProfileSelectionNavigationProp>();
+  const {scheduleSyncAfterWrite} = useSyncContext();
   const [users, setUsers] = useState<User[]>([]);
   const [showAddUserModal, setShowAddUserModal] = useState(false);
 
@@ -48,6 +51,7 @@ const ProfileSelectionScreen = () => {
       await database.createUser(name, pin);
       setShowAddUserModal(false);
       loadUsers();
+      scheduleSyncAfterWrite();
     } catch (error) {
       console.error('Failed to create user:', error);
       Alert.alert('Error', 'Failed to create user');
@@ -71,11 +75,21 @@ const ProfileSelectionScreen = () => {
 
   return (
     <View style={styles.container}>
+      {/* Top bar with sync badge and settings */}
+      <View style={styles.topBar}>
+        <SyncStatusBadge />
+        <TouchableOpacity
+          style={styles.settingsButton}
+          onPress={() => navigation.navigate('Settings')}>
+          <Text style={styles.settingsIcon}>⚙</Text>
+        </TouchableOpacity>
+      </View>
+
       <View style={styles.content}>
         <Text style={styles.title}>Who's tracking habits today?</Text>
 
         <View style={styles.grid}>
-          {allCards.map((card, index) =>
+          {allCards.map((card, _index) =>
             card.type === 'user' ? (
               <TouchableOpacity
                 key={card.user.id}
@@ -123,6 +137,21 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  topBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 4,
+  },
+  settingsButton: {
+    padding: 8,
+  },
+  settingsIcon: {
+    fontSize: 24,
+    color: '#666',
   },
   content: {
     flex: 1,

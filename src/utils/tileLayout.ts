@@ -1,7 +1,7 @@
 import {GoalWithStats} from '../types';
 
 export interface TileLayout {
-  id: number;
+  id: string;
   x: number;
   y: number;
   width: number;

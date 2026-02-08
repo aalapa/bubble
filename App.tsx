@@ -3,6 +3,7 @@ import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {StatusBar} from 'react-native';
 import {RootStackParamList} from './src/navigation/types';
+import {SyncProvider} from './src/services/SyncProvider';
 
 import LoadingScreen from './src/screens/LoadingScreen';
 import ProfileSelectionScreen from './src/screens/ProfileSelectionScreen';
@@ -11,12 +12,13 @@ import DashboardScreen from './src/screens/DashboardScreen';
 import AddGoalScreen from './src/screens/AddGoalScreen';
 import PersonalAnalyticsScreen from './src/screens/PersonalAnalyticsScreen';
 import LeaderboardScreen from './src/screens/LeaderboardScreen';
+import SettingsScreen from './src/screens/SettingsScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function App() {
   return (
-    <>
+    <SyncProvider>
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
       <NavigationContainer>
         <Stack.Navigator
@@ -38,9 +40,10 @@ function App() {
             component={PersonalAnalyticsScreen}
           />
           <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />
+          <Stack.Screen name="Settings" component={SettingsScreen} />
         </Stack.Navigator>
       </NavigationContainer>
-    </>
+    </SyncProvider>
   );
 }
 

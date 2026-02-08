@@ -4,11 +4,12 @@ import {RouteProp} from '@react-navigation/native';
 export type RootStackParamList = {
   Loading: undefined;
   ProfileSelection: undefined;
-  PinEntry: {userId: number};
-  Dashboard: {userId: number};
-  AddGoal: {userId: number};
-  PersonalAnalytics: {userId: number};
+  PinEntry: {userId: string};
+  Dashboard: {userId: string};
+  AddGoal: {userId: string};
+  PersonalAnalytics: {userId: string};
   Leaderboard: undefined;
+  Settings: undefined;
 };
 
 export type NavigationProp = NativeStackNavigationProp<RootStackParamList>;

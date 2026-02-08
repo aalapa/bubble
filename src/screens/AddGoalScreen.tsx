@@ -15,6 +15,7 @@ import {RootStackParamList} from '../navigation/types';
 import {GoalFrequency} from '../types';
 import database from '../database';
 import {generateColorForGoal} from '../utils/tileLayout';
+import {useSyncContext} from '../services/SyncProvider';
 
 type AddGoalNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -41,6 +42,7 @@ const AddGoalScreen = () => {
   const navigation = useNavigation<AddGoalNavigationProp>();
   const route = useRoute<AddGoalRouteProp>();
   const {userId} = route.params;
+  const {scheduleSyncAfterWrite} = useSyncContext();
 
   const [title, setTitle] = useState('');
   const [type, setType] = useState<'checkbox' | 'number'>('checkbox');
@@ -123,6 +125,7 @@ const AddGoalScreen = () => {
         frequency,
       );
 
+      scheduleSyncAfterWrite();
       navigation.goBack();
     } catch (error) {
       console.error('Failed to create goal:', error);

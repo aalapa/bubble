@@ -16,6 +16,7 @@ import {GoalWithStats, HabitStatus} from '../types';
 import database from '../database';
 import {calculateTileLayouts, TileLayout} from '../utils/tileLayout';
 import HabitLogModal from '../components/HabitLogModal';
+import {useSyncContext} from '../services/SyncProvider';
 
 type DashboardNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -31,6 +32,7 @@ const DashboardScreen = () => {
   const {userId} = route.params;
   const {width: screenWidth, height: screenHeight} = useWindowDimensions();
   const dashboardHeight = screenHeight - HEADER_HEIGHT;
+  const {scheduleSyncAfterWrite} = useSyncContext();
 
   const [goals, setGoals] = useState<GoalWithStats[]>([]);
   const [tileLayouts, setTileLayouts] = useState<TileLayout[]>([]);
@@ -72,6 +74,7 @@ const DashboardScreen = () => {
         const today = new Date().toISOString().split('T')[0];
         await database.logHabit(goal.id, today, HabitStatus.COMPLETED);
         loadGoals();
+        scheduleSyncAfterWrite();
       } catch (error) {
         console.error('Failed to log habit:', error);
         Alert.alert('Error', 'Failed to log habit');
@@ -97,6 +100,7 @@ const DashboardScreen = () => {
       setShowLogModal(false);
       setSelectedGoal(null);
       loadGoals();
+      scheduleSyncAfterWrite();
     } catch (error) {
       console.error('Failed to log habit:', error);
       Alert.alert('Error', 'Failed to log habit');

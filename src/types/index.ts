@@ -1,9 +1,10 @@
 export interface User {
-  id: number;
+  id: string;
   name: string;
   photo?: string;
   pin: string;
   createdAt: string;
+  updatedAt: string;
 }
 
 export type GoalFrequency =
@@ -13,8 +14,8 @@ export type GoalFrequency =
   | {type: 'custom'; intervalDays: number}; // every X days from creation
 
 export interface Goal {
-  id: number;
-  userId: number;
+  id: string;
+  userId: string;
   title: string;
   color: string;
   type: 'checkbox' | 'number';
@@ -22,6 +23,7 @@ export interface Goal {
   unit?: string;
   frequency: GoalFrequency;
   createdAt: string;
+  updatedAt: string;
 }
 
 export enum HabitStatus {
@@ -31,12 +33,13 @@ export enum HabitStatus {
 }
 
 export interface HabitLog {
-  id: number;
-  goalId: number;
+  id: string;
+  goalId: string;
   date: string;
   status: HabitStatus;
   value?: number;
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface GoalWithStats extends Goal {
