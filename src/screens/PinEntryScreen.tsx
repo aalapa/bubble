@@ -1,5 +1,12 @@
 import React, {useState} from 'react';
-import {View, Text, TouchableOpacity, StyleSheet, Alert} from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  useWindowDimensions,
+} from 'react-native';
 import {useNavigation, useRoute} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {RouteProp} from '@react-navigation/native';
@@ -17,8 +24,16 @@ const PinEntryScreen = () => {
   const route = useRoute<PinEntryRouteProp>();
   const {userId} = route.params;
 
+  const {width: screenWidth, height: screenHeight} = useWindowDimensions();
+  const isLandscape = screenWidth > screenHeight;
+
   const [pin, setPin] = useState('');
   const [userName, setUserName] = useState('');
+
+  // Responsive button sizing based on available space
+  const padHeight = isLandscape ? screenHeight - 40 : screenHeight * 0.55;
+  const btnSize = Math.min(80, Math.floor((padHeight - 48) / 4.8));
+  const btnGap = Math.max(8, Math.floor(btnSize * 0.18));
 
   React.useEffect(() => {
     const loadUser = async () => {
@@ -49,18 +64,16 @@ const PinEntryScreen = () => {
     setPin(pin.slice(0, -1));
   };
 
-  const renderPinDots = () => {
-    return (
-      <View style={styles.dotsContainer}>
-        {[0, 1, 2, 3].map(index => (
-          <View
-            key={index}
-            style={[styles.dot, index < pin.length && styles.dotFilled]}
-          />
-        ))}
-      </View>
-    );
-  };
+  const renderPinDots = () => (
+    <View style={styles.dotsContainer}>
+      {[0, 1, 2, 3].map(index => (
+        <View
+          key={index}
+          style={[styles.dot, index < pin.length && styles.dotFilled]}
+        />
+      ))}
+    </View>
+  );
 
   const renderNumberPad = () => {
     const numbers = [
@@ -71,13 +84,17 @@ const PinEntryScreen = () => {
     ];
 
     return (
-      <View style={styles.numberPad}>
+      <View style={{gap: btnGap}}>
         {numbers.map((row, rowIndex) => (
-          <View key={rowIndex} style={styles.numberRow}>
+          <View key={rowIndex} style={{flexDirection: 'row', gap: btnGap}}>
             {row.map((num, colIndex) => (
               <TouchableOpacity
                 key={colIndex}
-                style={[styles.numberButton, num === '' && styles.invisible]}
+                style={[
+                  styles.numberButton,
+                  {width: btnSize, height: btnSize, borderRadius: btnSize / 2},
+                  num === '' && styles.invisible,
+                ]}
                 onPress={() => {
                   if (num === '⌫') {
                     handleBackspace();
@@ -86,7 +103,13 @@ const PinEntryScreen = () => {
                   }
                 }}
                 disabled={num === ''}>
-                <Text style={styles.numberText}>{num}</Text>
+                <Text
+                  style={[
+                    styles.numberText,
+                    {fontSize: Math.floor(btnSize * 0.35)},
+                  ]}>
+                  {num}
+                </Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -95,6 +118,33 @@ const PinEntryScreen = () => {
     );
   };
 
+  const renderGreeting = () => (
+    <View style={isLandscape ? styles.greetingLandscape : styles.greetingPortrait}>
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => navigation.goBack()}>
+        <Text style={styles.backButtonText}>← Back</Text>
+      </TouchableOpacity>
+      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+        <Text style={styles.greeting}>Welcome,</Text>
+        <Text style={styles.greetingName}>{userName}!</Text>
+        <Text style={styles.instruction}>Enter your PIN</Text>
+        {isLandscape && renderPinDots()}
+      </View>
+    </View>
+  );
+
+  if (isLandscape) {
+    // Landscape: greeting left, keypad right
+    return (
+      <View style={styles.landscapeContainer}>
+        {renderGreeting()}
+        <View style={styles.padLandscape}>{renderNumberPad()}</View>
+      </View>
+    );
+  }
+
+  // Portrait: stacked vertically
   return (
     <View style={styles.container}>
       <TouchableOpacity
@@ -104,7 +154,8 @@ const PinEntryScreen = () => {
       </TouchableOpacity>
 
       <View style={styles.content}>
-        <Text style={styles.greeting}>Welcome, {userName}!</Text>
+        <Text style={styles.greeting}>Welcome,</Text>
+        <Text style={styles.greetingName}>{userName}!</Text>
         <Text style={styles.instruction}>Enter your PIN</Text>
 
         {renderPinDots()}
@@ -115,45 +166,72 @@ const PinEntryScreen = () => {
 };
 
 const styles = StyleSheet.create({
+  // ── Portrait ──
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
-  },
-  backButton: {
-    padding: 16,
-    alignSelf: 'flex-start',
-  },
-  backButtonText: {
-    fontSize: 18,
-    color: '#6200ee',
-    fontWeight: '600',
   },
   content: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingBottom: 60,
+    paddingBottom: 24,
+  },
+
+  // ── Landscape ──
+  landscapeContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    backgroundColor: '#f5f5f5',
+  },
+  greetingLandscape: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  greetingPortrait: {},
+  padLandscape: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 32,
+  },
+
+  // ── Shared ──
+  backButton: {
+    padding: 16,
+    alignSelf: 'flex-start',
+  },
+  backButtonText: {
+    fontSize: 16,
+    color: '#6200ee',
+    fontWeight: '600',
   },
   greeting: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: 'bold',
     color: '#333',
-    marginBottom: 8,
+  },
+  greetingName: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#6200ee',
+    marginBottom: 6,
   },
   instruction: {
-    fontSize: 18,
+    fontSize: 16,
     color: '#666',
-    marginBottom: 40,
+    marginBottom: 28,
   },
   dotsContainer: {
     flexDirection: 'row',
-    gap: 20,
-    marginBottom: 60,
+    gap: 18,
+    marginBottom: 32,
   },
   dot: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
     borderWidth: 2,
     borderColor: '#6200ee',
     backgroundColor: 'transparent',
@@ -161,31 +239,20 @@ const styles = StyleSheet.create({
   dotFilled: {
     backgroundColor: '#6200ee',
   },
-  numberPad: {
-    gap: 16,
-  },
-  numberRow: {
-    flexDirection: 'row',
-    gap: 16,
-  },
   numberButton: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
     backgroundColor: 'white',
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 2,
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
+    shadowOffset: {width: 0, height: 1},
     shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowRadius: 3,
   },
   invisible: {
     opacity: 0,
   },
   numberText: {
-    fontSize: 28,
     fontWeight: '600',
     color: '#333',
   },

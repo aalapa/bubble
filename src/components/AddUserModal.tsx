@@ -66,6 +66,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
           <TextInput
             style={styles.input}
             placeholder="Name"
+            placeholderTextColor="#999"
             value={name}
             onChangeText={setName}
             maxLength={20}
@@ -74,6 +75,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
           <TextInput
             style={styles.input}
             placeholder="4-Digit PIN"
+            placeholderTextColor="#999"
             value={pin}
             onChangeText={setPin}
             keyboardType="numeric"
@@ -84,6 +86,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
           <TextInput
             style={styles.input}
             placeholder="Confirm PIN"
+            placeholderTextColor="#999"
             value={confirmPin}
             onChangeText={setConfirmPin}
             keyboardType="numeric"
@@ -127,6 +130,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
+    color: '#333',
     marginBottom: 24,
     textAlign: 'center',
   },
@@ -136,6 +140,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
+    color: '#333',
+    backgroundColor: '#fff',
     marginBottom: 16,
   },
   buttonRow: {
