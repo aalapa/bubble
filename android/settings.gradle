@@ -1,6 +1,13 @@
 pluginManagement { includeBuild("../node_modules/@react-native/gradle-plugin") }
 plugins { id("com.facebook.react.settings") }
-extensions.configure(com.facebook.react.ReactSettingsExtension){ ex -> ex.autolinkLibrariesFromCommand() }
+extensions.configure(com.facebook.react.ReactSettingsExtension){ ex ->
+    // Use absolute path to node so Android Studio can find it
+    // (Android Studio does not inherit the shell PATH)
+    def nodePath = System.getenv("NODE_BINARY") ?: "/usr/local/bin/npx"
+    ex.autolinkLibrariesFromCommand(
+        [nodePath, "@react-native-community/cli", "config"]
+    )
+}
 rootProject.name = 'HabitTracker'
 include ':app'
 includeBuild('../node_modules/@react-native/gradle-plugin')

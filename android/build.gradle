@@ -6,6 +6,9 @@ buildscript {
         targetSdkVersion = 36
         ndkVersion = "27.1.12297006"
         kotlinVersion = "2.1.20"
+        // Absolute path so libraries (e.g. gesture-handler) skip running 'node' to resolve it.
+        // This avoids "error=2, No such file or directory" when building from Android Studio.
+        REACT_NATIVE_NODE_MODULES_DIR = new File(rootDir, "../node_modules/react-native")
     }
     repositories {
         google()
