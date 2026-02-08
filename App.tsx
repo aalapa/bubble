@@ -9,6 +9,8 @@ import ProfileSelectionScreen from './src/screens/ProfileSelectionScreen';
 import PinEntryScreen from './src/screens/PinEntryScreen';
 import DashboardScreen from './src/screens/DashboardScreen';
 import AddGoalScreen from './src/screens/AddGoalScreen';
+import PersonalAnalyticsScreen from './src/screens/PersonalAnalyticsScreen';
+import LeaderboardScreen from './src/screens/LeaderboardScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -31,6 +33,11 @@ function App() {
           <Stack.Screen name="PinEntry" component={PinEntryScreen} />
           <Stack.Screen name="Dashboard" component={DashboardScreen} />
           <Stack.Screen name="AddGoal" component={AddGoalScreen} />
+          <Stack.Screen
+            name="PersonalAnalytics"
+            component={PersonalAnalyticsScreen}
+          />
+          <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </>

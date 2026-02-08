@@ -101,6 +101,13 @@ const ProfileSelectionScreen = () => {
             ),
           )}
         </View>
+
+        {/* Leaderboard button */}
+        <TouchableOpacity
+          style={styles.leaderboardButton}
+          onPress={() => navigation.navigate('Leaderboard')}>
+          <Text style={styles.leaderboardText}>🏆 Leaderboard</Text>
+        </TouchableOpacity>
       </View>
 
       <AddUserModal
@@ -169,6 +176,23 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#333',
     textAlign: 'center',
+  },
+  leaderboardButton: {
+    marginTop: 32,
+    backgroundColor: '#6200ee',
+    paddingHorizontal: 28,
+    paddingVertical: 14,
+    borderRadius: 24,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+  },
+  leaderboardText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: 'white',
   },
 });
 

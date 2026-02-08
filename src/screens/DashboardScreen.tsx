@@ -195,7 +195,7 @@ const DashboardScreen = () => {
               style={styles.menuItem}
               onPress={() => {
                 setMenuVisible(false);
-                Alert.alert('Analytics', 'Analytics feature coming soon!');
+                navigation.navigate('PersonalAnalytics', {userId});
               }}>
               <Text style={styles.menuItemText}>Analytics</Text>
             </TouchableOpacity>

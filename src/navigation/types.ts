@@ -7,6 +7,8 @@ export type RootStackParamList = {
   PinEntry: {userId: number};
   Dashboard: {userId: number};
   AddGoal: {userId: number};
+  PersonalAnalytics: {userId: number};
+  Leaderboard: undefined;
 };
 
 export type NavigationProp = NativeStackNavigationProp<RootStackParamList>;

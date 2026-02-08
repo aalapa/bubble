@@ -43,3 +43,37 @@ export interface GoalWithStats extends Goal {
   completionRate: number;
   todayLog?: HabitLog;
 }
+
+// ─── Analytics Types ────────────────────────────────────────────────────────
+
+export interface GoalAnalytics {
+  goal: Goal;
+  completionRate7d: number;
+  completionRate30d: number;
+  completedCount: number;
+  skippedCount: number;
+  failedCount: number;
+  scheduledCount: number;
+}
+
+export interface StreakInfo {
+  current: number;
+  longest: number;
+}
+
+export interface PersonalAnalyticsData {
+  overallRate7d: number;
+  overallRate30d: number;
+  streak: StreakInfo;
+  goals: GoalAnalytics[];
+  totalCompleted: number;
+  totalSkipped: number;
+  totalFailed: number;
+}
+
+export interface LeaderboardEntry {
+  user: User;
+  score: number;
+  goalCount: number;
+  rank: number;
+}
