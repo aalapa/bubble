@@ -622,6 +622,17 @@ class Database {
     };
   }
 
+  async deleteHabitLog(goalId: string, date: string): Promise<void> {
+    if (!this.db) throw new Error('Database not initialized');
+    const now = new Date().toISOString();
+
+    // Soft-delete the habit log for undo/sync purposes
+    await this.db.executeSql(
+      'UPDATE habit_logs SET is_deleted = 1, is_dirty = 1, updated_at = ? WHERE goal_id = ? AND date = ? AND is_deleted = 0',
+      [now, goalId, date],
+    );
+  }
+
   async getGoalCompletionRate(goal: Goal, days: number): Promise<number> {
     if (!this.db) throw new Error('Database not initialized');
 

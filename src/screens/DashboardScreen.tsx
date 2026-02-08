@@ -1,4 +1,4 @@
-import React, {useState, useCallback} from 'react';
+import React, {useState, useCallback, useRef} from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   StyleSheet,
   useWindowDimensions,
   Alert,
+  Animated,
 } from 'react-native';
 import {useNavigation, useRoute, useFocusEffect} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
@@ -41,6 +42,11 @@ const DashboardScreen = () => {
   const [showLogModal, setShowLogModal] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
 
+  // Undo state
+  const [undoGoal, setUndoGoal] = useState<GoalWithStats | null>(null);
+  const undoOpacity = useRef(new Animated.Value(0)).current;
+  const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const loadGoals = useCallback(async () => {
     try {
       const today = new Date().toISOString().split('T')[0];
@@ -67,28 +73,85 @@ const DashboardScreen = () => {
     }, [loadGoals]),
   );
 
-  const handleTilePress = async (goal: GoalWithStats) => {
+  const showUndoBar = (goal: GoalWithStats) => {
+    // Clear any existing undo timer
+    if (undoTimerRef.current) {
+      clearTimeout(undoTimerRef.current);
+    }
+
+    setUndoGoal(goal);
+    Animated.timing(undoOpacity, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+
+    // Auto-hide after 5 seconds
+    undoTimerRef.current = setTimeout(() => {
+      hideUndoBar();
+    }, 5000);
+  };
+
+  const hideUndoBar = () => {
+    Animated.timing(undoOpacity, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
+      setUndoGoal(null);
+    });
+    if (undoTimerRef.current) {
+      clearTimeout(undoTimerRef.current);
+      undoTimerRef.current = null;
+    }
+  };
+
+  const handleUndo = async () => {
+    if (!undoGoal) return;
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      // Re-log as "failed" effectively removes the completion — but better to
+      // actually delete the log. We'll use logHabit with a special status or
+      // just re-log as the opposite. Simplest: log again to overwrite.
+      // Actually, let's just remove the log by logging it as SKIPPED first,
+      // then the user can re-do. Better approach: we need a deleteHabitLog.
+      // For now, mark it as FAILED (which clears the "completed" status
+      // and the tile reappears since it's no longer "completed").
+      // Wait — the tile filter is `!goal.todayLog`. So ANY log hides the tile.
+      // We need to actually delete the log entry.
+      await database.deleteHabitLog(undoGoal.id, today);
+      hideUndoBar();
+      loadGoals();
+      scheduleSyncAfterWrite();
+    } catch (error) {
+      console.error('Failed to undo:', error);
+    }
+  };
+
+  // Tap = open log modal (for all goal types)
+  const handleTilePress = (goal: GoalWithStats) => {
+    setSelectedGoal(goal);
+    setShowLogModal(true);
+  };
+
+  // Long press = quick-complete for checkbox goals
+  const handleTileLongPress = async (goal: GoalWithStats) => {
     if (goal.type === 'checkbox') {
-      // Quick-complete checkbox goals with a single tap
       try {
         const today = new Date().toISOString().split('T')[0];
         await database.logHabit(goal.id, today, HabitStatus.COMPLETED);
         loadGoals();
         scheduleSyncAfterWrite();
+        showUndoBar(goal);
       } catch (error) {
         console.error('Failed to log habit:', error);
         Alert.alert('Error', 'Failed to log habit');
       }
     } else {
-      // Number goals open the modal to enter a value
+      // For number goals, long press also opens modal
       setSelectedGoal(goal);
       setShowLogModal(true);
     }
-  };
-
-  const handleTileLongPress = (goal: GoalWithStats) => {
-    setSelectedGoal(goal);
-    setShowLogModal(true);
   };
 
   const handleLogHabit = async (status: HabitStatus, value?: number) => {
@@ -98,9 +161,11 @@ const DashboardScreen = () => {
       const today = new Date().toISOString().split('T')[0];
       await database.logHabit(selectedGoal.id, today, status, value);
       setShowLogModal(false);
+      const loggedGoal = selectedGoal;
       setSelectedGoal(null);
       loadGoals();
       scheduleSyncAfterWrite();
+      showUndoBar(loggedGoal);
     } catch (error) {
       console.error('Failed to log habit:', error);
       Alert.alert('Error', 'Failed to log habit');
@@ -155,7 +220,9 @@ const DashboardScreen = () => {
             {Math.round(goal.completionRate * 100)}% this month
           </Text>
           <Text style={styles.tileHint}>
-            {goal.type === 'checkbox' ? 'Tap to complete' : 'Tap to log value'}
+            {goal.type === 'checkbox'
+              ? 'Tap to log · Hold to complete'
+              : 'Tap to log value'}
           </Text>
         </View>
       </TouchableOpacity>
@@ -228,6 +295,18 @@ const DashboardScreen = () => {
               </View>
             )}
           </>
+        )}
+
+        {/* Undo bar */}
+        {undoGoal && (
+          <Animated.View style={[styles.undoBar, {opacity: undoOpacity}]}>
+            <Text style={styles.undoText} numberOfLines={1}>
+              ✓ "{undoGoal.title}" logged
+            </Text>
+            <TouchableOpacity style={styles.undoButton} onPress={handleUndo}>
+              <Text style={styles.undoButtonText}>UNDO</Text>
+            </TouchableOpacity>
+          </Animated.View>
         )}
       </View>
 
@@ -384,6 +463,39 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 14,
     fontWeight: '600',
+  },
+  // Undo bar
+  undoBar: {
+    position: 'absolute',
+    bottom: 16,
+    left: 16,
+    right: 16,
+    backgroundColor: '#323232',
+    borderRadius: 8,
+    padding: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 3},
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+  },
+  undoText: {
+    color: 'white',
+    fontSize: 14,
+    flex: 1,
+    marginRight: 12,
+  },
+  undoButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  undoButtonText: {
+    color: '#bb86fc',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
 });
 
